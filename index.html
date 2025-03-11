@@ -62,53 +62,47 @@
     const addComment = document.querySelector(".add-form-button");
     const addList = document.querySelector(".comments");
 
+    // Функция для получения текущей даты и времени в нужном формате
+    const getFormattedDate = () => {
+        const now = new Date();
+        return `${now.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit', year: '2-digit'})}
+            ${now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
+    };
 
+    // Обработчик события для кнопки "Добавить"
     addComment.addEventListener("click", function () {
-        if (addName.value !== "" && addText.value !== "") {
-            const newCommentElement = document.createElement("li");
-            newCommentElement.classList.add("comment");
-            addList.appendChild(newCommentElement);
-            const newComHeaderElement = document.createElement("div");
-            newComHeaderElement.classList.add("comment-header");
-            newCommentElement.appendChild(newComHeaderElement);
-            const newNameElement = document.createElement("div");
-            newNameElement.classList.add("head-name");
-            newNameElement.innerHTML = `${addName.value}`;
-            newComHeaderElement.appendChild(newNameElement);
-            const newTimeElement = document.createElement("div");
-            newTimeElement.classList.add("head-time");
-            newTimeElement.innerHTML = `${new Date().toLocaleString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: '2-digit'
-            })} ${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
-            newComHeaderElement.appendChild(newTimeElement);
-            const newTapedElement = document.createElement("div");
-            newTapedElement.classList.add("comment-body");
-            newCommentElement.appendChild(newTapedElement);
-            const newTextElement = document.createElement("div");
-            newTextElement.classList.add("comment-text");
-            newTextElement.innerHTML = `${addText.value}`;
-            newTapedElement.appendChild(newTextElement);
-            const newFooterElement = document.createElement("div");
-            newFooterElement.classList.add("comment-footer");
-            newCommentElement.appendChild(newFooterElement);
-            const newLikeElement = document.createElement("div");
-            newLikeElement.classList.add("likes");
-            newFooterElement.appendChild(newLikeElement);
-            const newLikeCounterElement = document.createElement("span");
-            newLikeCounterElement.classList.add("likes-counter");
-            newLikeCounterElement.textContent = '0';
-            newLikeElement.appendChild(newLikeCounterElement);
-            const newLikeButtonElement = document.createElement("button");
-            newLikeButtonElement.classList.add("like-button");
-            newLikeElement.appendChild(newLikeButtonElement);
-        } else if (addName.value === '') {
+        if (addName.value.trim() === "") {
             alert("Введите ваше имя");
-        } else if (addText.value === '') {
-            alert("Введите ваш коментарий ");
+            return;
         }
+        if (addText.value.trim() === "") {
+            alert("Введите ваш комментарий");
+            return;
+        }
+
+        const newCommentHTML = `
+        <li class="comment">
+            <div class="comment-header">
+                <div class="head-name">${addName.value}</div>
+                <div class="head-time">${getFormattedDate()}</div>
+            </div>
+            <div class="comment-body">
+                <div class="comment-text">${addText.value}</div>
+            </div>
+            <div class="comment-footer">
+                <div class="likes">
+                    <span class="likes-counter">0</span>
+                    <button class="like-button"></button>
+                </div>
+            </div>
+        </li>`;
+
+        addList.insertAdjacentHTML("beforeend", newCommentHTML);
+
+        addName.value = "";
+        addText.value = "";
     });
+
     console.log("It works!");
 </script>
 </html>
