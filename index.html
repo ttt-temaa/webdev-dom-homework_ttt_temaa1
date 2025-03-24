@@ -80,6 +80,10 @@
     const addText = document.querySelector(".add-form-text");
     const addComment = document.querySelector(".add-form-button");
 
+    const escapeHTML = (str) => {
+        return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    };
+
     const getFormattedDate = () => {
         const now = new Date();
         return `${now.toLocaleDateString('ru-RU', {
@@ -91,13 +95,13 @@
 
     const renderComments = () => {
         addList.innerHTML = comments.map((comment, index) => `
-        <li class="comment">
+        <li class="comment" data-index="${index}">
             <div class="comment-header">
-                <div class="head-name">${comment.name}</div>
+                <div class="head-name">${escapeHTML(comment.name)}</div>
                 <div class="head-time">${comment.date}</div>
             </div>
             <div class="comment-body">
-                <div class="comment-text">${comment.text}</div>
+                <div class="comment-text">${escapeHTML(comment.text)}</div>
             </div>
             <div class="comment-footer">
                 <div class="likes">
@@ -108,11 +112,20 @@
         </li>`).join("");
 
         document.querySelectorAll(".like-button").forEach(button => {
-            button.addEventListener("click", () => {
+            button.addEventListener("click", (event) => {
+                event.stopPropagation();
                 const index = button.dataset.index;
                 comments[index].isLiked = !comments[index].isLiked;
                 comments[index].likes += comments[index].isLiked ? 1 : -1;
                 renderComments();
+            });
+        });
+
+        document.querySelectorAll(".comment").forEach(comment => {
+            comment.addEventListener("click", () => {
+                const index = comment.dataset.index;
+                addText.value = `> ${escapeHTML(comments[index].text)}\n`;
+                addName.value = comments[index].name;
             });
         });
     };
@@ -124,9 +137,9 @@
         }
 
         comments.push({
-            name: addName.value,
+            name: escapeHTML(addName.value),
             date: getFormattedDate(),
-            text: addText.value,
+            text: escapeHTML(addText.value),
             likes: 0,
             isLiked: false
         });
