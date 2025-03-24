@@ -57,52 +57,85 @@
 
 <script>
     "use strict";
+
+    const comments = [
+        {
+            name: "Глеб Фокин",
+            date: "12.02.22 12:18",
+            text: "Это будет первый комментарий на этой странице",
+            likes: 3,
+            isLiked: false
+        },
+        {
+            name: "Варвара Н.",
+            date: "13.02.22 19:22",
+            text: "Мне нравится как оформлена эта страница! ❤",
+            likes: 75,
+            isLiked: true
+        }
+    ];
+
+    const addList = document.querySelector(".comments");
     const addName = document.querySelector(".add-form-name");
     const addText = document.querySelector(".add-form-text");
     const addComment = document.querySelector(".add-form-button");
-    const addList = document.querySelector(".comments");
 
-    // Функция для получения текущей даты и времени в нужном формате
     const getFormattedDate = () => {
         const now = new Date();
-        return `${now.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit', year: '2-digit'})}
-            ${now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
+        return `${now.toLocaleDateString('ru-RU', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit'
+        })} ${now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
     };
 
-    // Обработчик события для кнопки "Добавить"
-    addComment.addEventListener("click", function () {
-        if (addName.value.trim() === "") {
-            alert("Введите ваше имя");
-            return;
-        }
-        if (addText.value.trim() === "") {
-            alert("Введите ваш комментарий");
-            return;
-        }
-
-        const newCommentHTML = `
+    const renderComments = () => {
+        addList.innerHTML = comments.map((comment, index) => `
         <li class="comment">
             <div class="comment-header">
-                <div class="head-name">${addName.value}</div>
-                <div class="head-time">${getFormattedDate()}</div>
+                <div class="head-name">${comment.name}</div>
+                <div class="head-time">${comment.date}</div>
             </div>
             <div class="comment-body">
-                <div class="comment-text">${addText.value}</div>
+                <div class="comment-text">${comment.text}</div>
             </div>
             <div class="comment-footer">
                 <div class="likes">
-                    <span class="likes-counter">0</span>
-                    <button class="like-button"></button>
+                    <span class="likes-counter">${comment.likes}</span>
+                    <button class="like-button ${comment.isLiked ? "-active-like" : ""}" data-index="${index}"></button>
                 </div>
             </div>
-        </li>`;
+        </li>`).join("");
 
-        addList.insertAdjacentHTML("beforeend", newCommentHTML);
+        document.querySelectorAll(".like-button").forEach(button => {
+            button.addEventListener("click", () => {
+                const index = button.dataset.index;
+                comments[index].isLiked = !comments[index].isLiked;
+                comments[index].likes += comments[index].isLiked ? 1 : -1;
+                renderComments();
+            });
+        });
+    };
+
+    addComment.addEventListener("click", () => {
+        if (addName.value.trim() === "" || addText.value.trim() === "") {
+            alert("Введите имя и комментарий");
+            return;
+        }
+
+        comments.push({
+            name: addName.value,
+            date: getFormattedDate(),
+            text: addText.value,
+            likes: 0,
+            isLiked: false
+        });
 
         addName.value = "";
         addText.value = "";
+        renderComments();
     });
 
-    console.log("It works!");
+    renderComments();
 </script>
 </html>
