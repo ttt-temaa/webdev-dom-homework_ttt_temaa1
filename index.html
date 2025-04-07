@@ -7,148 +7,128 @@
 
 <body>
 <div class="container">
-    <ul class="comments">
-        <li class="comment">
-            <div class="comment-header">
-                <div class="head-name">Глеб Фокин</div>
-                <div class="head-time">12.02.22 12:18</div>
-            </div>
-            <div class="comment-body">
-                <div class="comment-text">
-                    Это будет первый комментарий на этой странице
-                </div>
-            </div>
-            <div class="comment-footer">
-                <div class="likes">
-                    <span class="likes-counter">3</span>
-                    <button class="like-button"></button>
-                </div>
-            </div>
-        </li>
-        <li class="comment">
-            <div class="comment-header">
-                <div>Варвара Н.</div>
-                <div>13.02.22 19:22</div>
-            </div>
-            <div class="comment-body">
-                <div class="comment-text">
-                    Мне нравится как оформлена эта страница! ❤
-                </div>
-                <div class="comment-footer">
-                    <div class="likes">
-                        <span class="likes-counter">75</span>
-                        <button class="like-button -active-like"></button>
-                    </div>
-                </div>
-            </div>
-        </li>
-    </ul>
+    <ul class="comments"></ul>
     <div class="add-form">
         <label>
             <input type="text" class="add-form-name" placeholder="Введите ваше имя"/>
         </label>
-        <textarea type="textarea" class="add-form-text" placeholder="Введите ваш коментарий" rows="4"></textarea>
+        <textarea class="add-form-text" placeholder="Введите ваш комментарий" rows="4"></textarea>
         <div class="add-form-row">
             <button class="add-form-button">Написать</button>
         </div>
     </div>
 </div>
-</body>
 
 <script>
     "use strict";
 
-    const comments = [
-        {
-            name: "Глеб Фокин",
-            date: "12.02.22 12:18",
-            text: "Это будет первый комментарий на этой странице",
-            likes: 3,
-            isLiked: false
-        },
-        {
-            name: "Варвара Н.",
-            date: "13.02.22 19:22",
-            text: "Мне нравится как оформлена эта страница! ❤",
-            likes: 75,
-            isLiked: true
-        }
-    ];
-
-    const addList = document.querySelector(".comments");
-    const addName = document.querySelector(".add-form-name");
-    const addText = document.querySelector(".add-form-text");
-    const addComment = document.querySelector(".add-form-button");
-
-    const escapeHTML = (str) => {
-        return str.replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    const API_URL = "https://wedev-api.sky.pro/api/v1/ttttemaa/comments";
+    const elements = {
+        list: document.querySelector(".comments"),
+        name: document.querySelector(".add-form-name"),
+        text: document.querySelector(".add-form-text"),
+        button: document.querySelector(".add-form-button"),
     };
+    let comments = [];
 
-    const getFormattedDate = () => {
-        const now = new Date();
-        return `${now.toLocaleDateString('ru-RU', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit'
-        })} ${now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
+    const escapeHTML = (str) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const formatDate = (isoDate) => {
+        const date = new Date(isoDate);
+        return `${date.toLocaleString("ru-RU", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        })}`;
     };
 
     const renderComments = () => {
-        addList.innerHTML = comments.map((comment, index) => `
-        <li class="comment" data-index="${index}">
-            <div class="comment-header">
-                <div class="head-name">${escapeHTML(comment.name)}</div>
-                <div class="head-time">${comment.date}</div>
+        elements.list.innerHTML = comments
+            .map(
+                (c, i) => `
+        <li class="comment" data-index="${i}">
+          <div class="comment-header">
+            <div class="head-name">${escapeHTML(c.name)}</div>
+            <div class="head-time">${c.date}</div>
+          </div>
+          <div class="comment-body">
+            <div class="comment-text">${escapeHTML(c.text)}</div>
+          </div>
+          <div class="comment-footer">
+            <div class="likes">
+              <span class="likes-counter">${c.likes}</span>
+              <button class="like-button ${c.isLiked ? "-active-like" : ""}" data-index="${i}"></button>
             </div>
-            <div class="comment-body">
-                <div class="comment-text">${escapeHTML(comment.text)}</div>
-            </div>
-            <div class="comment-footer">
-                <div class="likes">
-                    <span class="likes-counter">${comment.likes}</span>
-                    <button class="like-button ${comment.isLiked ? "-active-like" : ""}" data-index="${index}"></button>
-                </div>
-            </div>
-        </li>`).join("");
+          </div>
+        </li>`
+            )
+            .join("");
 
-        document.querySelectorAll(".like-button").forEach(button => {
-            button.addEventListener("click", (event) => {
-                event.stopPropagation();
-                const index = button.dataset.index;
-                comments[index].isLiked = !comments[index].isLiked;
-                comments[index].likes += comments[index].isLiked ? 1 : -1;
+        elements.list.querySelectorAll(".like-button").forEach((btn) =>
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const i = btn.dataset.index;
+                comments[i].isLiked = !comments[i].isLiked;
+                comments[i].likes += comments[i].isLiked ? 1 : -1;
                 renderComments();
-            });
-        });
+            })
+        );
 
-        document.querySelectorAll(".comment").forEach(comment => {
+        elements.list.querySelectorAll(".comment").forEach((comment) =>
             comment.addEventListener("click", () => {
-                const index = comment.dataset.index;
-                addText.value = `> ${escapeHTML(comments[index].text)}\n`;
-                addName.value = comments[index].name;
-            });
-        });
+                const i = comment.dataset.index;
+                elements.text.value = `> ${escapeHTML(comments[i].text)}\n`;
+                elements.name.value = comments[i].name;
+            })
+        );
     };
 
-    addComment.addEventListener("click", () => {
-        if (addName.value.trim() === "" || addText.value.trim() === "") {
-            alert("Введите имя и комментарий");
+    const fetchComments = async () => {
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const {comments: data} = await response.json();
+            comments = data.map((c) => ({
+                name: c.author.name,
+                date: formatDate(c.date),
+                text: c.text,
+                likes: 0,
+                isLiked: false,
+            }));
+            renderComments();
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert(`Не удалось загрузить комментарии: ${error.message}`);
+        }
+    };
+
+    const postComment = async () => {
+        const name = elements.name.value.trim();
+        const text = elements.text.value.trim();
+
+        if (name.length < 3 || text.length < 3) {
+            alert("Имя и комментарий должны быть ≥ 3 символов");
             return;
         }
 
-        comments.push({
-            name: escapeHTML(addName.value),
-            date: getFormattedDate(),
-            text: escapeHTML(addText.value),
-            likes: 0,
-            isLiked: false
-        });
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({name, text}),
+            });
+            if (!response.ok) throw new Error((await response.json()).error);
+            await fetchComments();
+            elements.name.value = "";
+            elements.text.value = "";
+        } catch (error) {
+            console.error("Post error:", error);
+            alert(`Ошибка добавления: ${error.message}`);
+        }
+    };
 
-        addName.value = "";
-        addText.value = "";
-        renderComments();
-    });
-
-    renderComments();
+    elements.button.addEventListener("click", postComment);
+    fetchComments();
 </script>
+</body>
 </html>
