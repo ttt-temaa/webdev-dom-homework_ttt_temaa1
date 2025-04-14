@@ -7,7 +7,8 @@
 
 <body>
 <div class="container">
-    <ul class="comments"></ul>
+    <div class="comments-loading" style="display: block;">Загрузка комментариев...</div>
+    <ul class="comments" style="display: none;"></ul>
     <div class="add-form">
         <label>
             <input type="text" class="add-form-name" placeholder="Введите ваше имя"/>
@@ -17,6 +18,7 @@
             <button class="add-form-button">Написать</button>
         </div>
     </div>
+    <div class="comment-loading" style="display: none;">Комментарий добавляется...</div>
 </div>
 
 <script>
@@ -25,13 +27,16 @@
     const API_URL = "https://wedev-api.sky.pro/api/v1/ttttemaa/comments";
     const elements = {
         list: document.querySelector(".comments"),
+        commentsLoading: document.querySelector(".comments-loading"),
         name: document.querySelector(".add-form-name"),
         text: document.querySelector(".add-form-text"),
         button: document.querySelector(".add-form-button"),
+        addForm: document.querySelector(".add-form"),
+        commentLoading: document.querySelector(".comment-loading"),
     };
     let comments = [];
 
-    const escapeHTML = (str) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const escapeHTML = (str) => str.replace(/</g, "<").replace(/>/g, ">");
     const formatDate = (isoDate) => {
         const date = new Date(isoDate);
         return `${date.toLocaleString("ru-RU", {
@@ -41,6 +46,14 @@
             hour: "2-digit",
             minute: "2-digit",
         })}`;
+    };
+
+    const delay = (interval = 300) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, interval);
+        });
     };
 
     const renderComments = () => {
@@ -58,7 +71,9 @@
           <div class="comment-footer">
             <div class="likes">
               <span class="likes-counter">${c.likes}</span>
-              <button class="like-button ${c.isLiked ? "-active-like" : ""}" data-index="${i}"></button>
+              <button class="like-button ${c.isLiked ? "-active-like" : ""} ${
+                    c.isLikeLoading ? "-loading-like" : ""
+                }" data-index="${i}"></button>
             </div>
           </div>
         </li>`
@@ -69,9 +84,26 @@
             btn.addEventListener("click", (e) => {
                 e.stopPropagation();
                 const i = btn.dataset.index;
-                comments[i].isLiked = !comments[i].isLiked;
-                comments[i].likes += comments[i].isLiked ? 1 : -1;
+                if (comments[i].isLikeLoading) return;
+
+                comments[i].isLikeLoading = true;
+                btn.disabled = true;
                 renderComments();
+
+                delay(2000)
+                    .then(() => {
+                        comments[i].likes = comments[i].isLiked
+                            ? comments[i].likes - 1
+                            : comments[i].likes + 1;
+                        comments[i].isLiked = !comments[i].isLiked;
+                        comments[i].isLikeLoading = false;
+                        renderComments();
+                    })
+                    .catch((error) => {
+                        console.error("Like error:", error);
+                        comments[i].isLikeLoading = false;
+                        renderComments();
+                    });
             })
         );
 
@@ -84,50 +116,81 @@
         );
     };
 
-    const fetchComments = async () => {
-        try {
-            const response = await fetch(API_URL);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const {comments: data} = await response.json();
-            comments = data.map((c) => ({
-                name: c.author.name,
-                date: formatDate(c.date),
-                text: c.text,
-                likes: 0,
-                isLiked: false,
-            }));
-            renderComments();
-        } catch (error) {
-            console.error("Fetch error:", error);
-            alert(`Не удалось загрузить комментарии: ${error.message}`);
-        }
+    const fetchComments = () => {
+
+        return fetch(API_URL)
+            .then((response) => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json();
+            })
+            .then(({comments: data}) => {
+                comments = data.map((c) => ({
+                    name: c.author.name,
+                    date: formatDate(c.date),
+                    text: c.text,
+                    likes: 0,
+                    isLiked: false,
+                    isLikeLoading: false,
+                }));
+                renderComments();
+            })
+            .catch((error) => {
+                console.error("Fetch error:", error);
+                alert(`Не удалось загрузить комментарии: ${error.message}`);
+            })
+            .finally(() => {
+                elements.commentsLoading.style.display = "none";
+                elements.list.style.display = "block";
+            });
     };
 
-    const postComment = async () => {
+    const postComment = () => {
         const name = elements.name.value.trim();
         const text = elements.text.value.trim();
 
         if (name.length < 3 || text.length < 3) {
             alert("Имя и комментарий должны быть ≥ 3 символов");
-            return;
+            return Promise.resolve();
         }
 
-        try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify({name, text}),
+        elements.addForm.style.display = "none";
+        elements.commentLoading.style.display = "block";
+        elements.button.disabled = true;
+
+        return fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({name, text}),
+        })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.json().then((errorData) => {
+                        throw new Error(errorData.error);
+                    });
+                }
+                return response.json();
+            })
+            .then(() => {
+                return fetchComments();
+            })
+            .then(() => {
+                elements.name.value = "";
+                elements.text.value = "";
+            })
+            .catch((error) => {
+                console.error("Post error:", error);
+                alert(`Ошибка добавления: ${error.message}`);
+            })
+            .finally(() => {
+                elements.addForm.style.display = "block";
+                elements.commentLoading.style.display = "none";
+                elements.button.disabled = false;
             });
-            if (!response.ok) throw new Error((await response.json()).error);
-            await fetchComments();
-            elements.name.value = "";
-            elements.text.value = "";
-        } catch (error) {
-            console.error("Post error:", error);
-            alert(`Ошибка добавления: ${error.message}`);
-        }
     };
 
-    elements.button.addEventListener("click", postComment);
+    elements.button.addEventListener("click", () => {
+        postComment();
+    });
+
     fetchComments();
 </script>
 </body>
