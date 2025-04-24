@@ -35,8 +35,9 @@
         commentLoading: document.querySelector(".comment-loading"),
     };
     let comments = [];
+    let formData = {name: "", text: ""};
 
-    const escapeHTML = (str) => str.replace(/</g, "<").replace(/>/g, ">");
+    const escapeHTML = (str) => str.replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const formatDate = (isoDate) => {
         const date = new Date(isoDate);
         return `${date.toLocaleString("ru-RU", {
@@ -112,15 +113,21 @@
                 const i = comment.dataset.index;
                 elements.text.value = `> ${escapeHTML(comments[i].text)}\n`;
                 elements.name.value = comments[i].name;
+                formData.name = elements.name.value;
+                formData.text = elements.text.value;
             })
         );
     };
 
     const fetchComments = () => {
-
         return fetch(API_URL)
             .then((response) => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                if (!response.ok) {
+                    if (response.status >= 500 && response.status < 600) {
+                        throw new Error("Сервер сломался, попробуй позже");
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
                 return response.json();
             })
             .then(({comments: data}) => {
@@ -136,7 +143,11 @@
             })
             .catch((error) => {
                 console.error("Fetch error:", error);
-                alert(`Не удалось загрузить комментарии: ${error.message}`);
+                if (error.name === "TypeError" || error.message.includes("Network")) {
+                    alert("Проверьте подключение к интернету и попробуйте позже");
+                } else {
+                    alert(error.message || "Не удалось загрузить комментарии");
+                }
             })
             .finally(() => {
                 elements.commentsLoading.style.display = "none";
@@ -144,12 +155,9 @@
             });
     };
 
-    const postComment = () => {
-        const name = elements.name.value.trim();
-        const text = elements.text.value.trim();
-
+    const postComment = (name, text, isRetry = false) => {
         if (name.length < 3 || text.length < 3) {
-            alert("Имя и комментарий должны быть ≥ 3 символов");
+            alert("Имя и комментарий должны быть не короче 3 символов");
             return Promise.resolve();
         }
 
@@ -159,12 +167,22 @@
 
         return fetch(API_URL, {
             method: "POST",
-            body: JSON.stringify({name, text}),
+            body: JSON.stringify({
+                name,
+                text,
+                forceError: isRetry, // ошибка 500
+            }),
         })
             .then((response) => {
                 if (!response.ok) {
+                    if (response.status === 400) {
+                        throw new Error("Имя и комментарий должны быть не короче 3 символов");
+                    }
+                    if (response.status >= 500 && response.status < 600) {
+                        throw new Error("Сервер сломался, попробуй позже");
+                    }
                     return response.json().then((errorData) => {
-                        throw new Error(errorData.error);
+                        throw new Error(errorData.error || `HTTP ${response.status}`);
                     });
                 }
                 return response.json();
@@ -175,10 +193,20 @@
             .then(() => {
                 elements.name.value = "";
                 elements.text.value = "";
+                formData.name = "";
+                formData.text = "";
             })
             .catch((error) => {
                 console.error("Post error:", error);
-                alert(`Ошибка добавления: ${error.message}`);
+                if (error.message === "Сервер сломался, попробуй позже" && !isRetry) {
+                    // повтор ошибки 500
+                    return delay(1000).then(() => postComment(name, text, true));
+                }
+                if (error.name === "TypeError" || error.message.includes("Network")) {
+                    alert("Проверьте подключение к интернету и попробуйте позже");
+                } else {
+                    alert(error.message || "Ошибка добавления комментария");
+                }
             })
             .finally(() => {
                 elements.addForm.style.display = "block";
@@ -187,11 +215,26 @@
             });
     };
 
+    // сохранение данных в полях ввода
+    elements.name.addEventListener("input", () => {
+        formData.name = elements.name.value;
+    });
+    elements.text.addEventListener("input", () => {
+        formData.text = elements.text.value;
+    });
+
+    // восстановление данных в полях ввода
+    const restoreFormData = () => {
+        elements.name.value = formData.name;
+        elements.text.value = formData.text;
+    };
+
     elements.button.addEventListener("click", () => {
-        postComment();
+        postComment(elements.name.value.trim(), elements.text.value.trim());
     });
 
     fetchComments();
+    restoreFormData(); // восстановить данные в полях ввода при загрузке
 </script>
 </body>
 </html>
