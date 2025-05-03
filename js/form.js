@@ -1,15 +1,21 @@
-import { delay } from './utils.js';
-import { addComment, getComments } from './api.js';
-import { initializeComments, renderComments } from './comments.js';
+import {delay} from './utils.js';
+import {addComment, getComments} from './api.js';
+import {initializeComments, renderComments} from './comments.js';
+import {isAuthorized} from './auth.js';
 
-export let formData = { name: "", text: "" };
+export let formData = {text: ""};
 
 export const handleFormSubmit = (elements) => {
-    const name = elements.name.value.trim();
+    if (!isAuthorized()) {
+        alert("Для добавления комментария необходимо авторизоваться");
+        window.location.href = 'login.html';
+        return Promise.resolve();
+    }
+
     const text = elements.text.value.trim();
-    
-    if (name.length < 3 || text.length < 3) {
-        alert("Имя и комментарий должны быть не короче 3 символов");
+
+    if (text.length < 3) {
+        alert("Комментарий должен быть не короче 3 символов");
         return Promise.resolve();
     }
 
@@ -19,21 +25,16 @@ export const handleFormSubmit = (elements) => {
 
     const handleSuccess = () => {
         return getComments()
-            .then(({ comments }) => {
+            .then(({comments}) => {
                 initializeComments(comments);
                 renderComments(elements);
-                elements.name.value = "";
                 elements.text.value = "";
-                formData.name = "";
                 formData.text = "";
             });
     };
 
-    const handleError = (error, isRetry = false) => {
+    const handleError = (error) => {
         console.error("Post error:", error);
-        if (error.message === "Сервер сломался, попробуй позже" && !isRetry) {
-            return delay(1000).then(() => submitComment(name, text, true));
-        }
         if (error.name === "TypeError" || error.message.includes("Network")) {
             alert("Проверьте подключение к интернету и попробуйте позже");
         } else {
@@ -41,35 +42,27 @@ export const handleFormSubmit = (elements) => {
         }
     };
 
-    const submitComment = (name, text, isRetry = false) => {
-        return addComment(name, text, isRetry)
-            .then(handleSuccess)
-            .catch((error) => handleError(error, isRetry))
-            .finally(() => {
-                elements.addForm.style.display = "block";
-                elements.commentLoading.style.display = "none";
-                elements.button.disabled = false;
-            });
-    };
-
-    return submitComment(name, text);
+    return addComment(text)
+        .then(handleSuccess)
+        .catch(handleError)
+        .finally(() => {
+            elements.addForm.style.display = "block";
+            elements.commentLoading.style.display = "none";
+            elements.button.disabled = false;
+        });
 };
 
 export const initializeForm = (elements) => {
-    elements.name.addEventListener("input", () => {
-        formData.name = elements.name.value;
-    });
-
     elements.text.addEventListener("input", () => {
         formData.text = elements.text.value;
     });
 
-    elements.button.addEventListener("click", () => {
+    elements.button.addEventListener("click", (e) => {
+        e.preventDefault();
         handleFormSubmit(elements);
     });
 };
 
 export const restoreFormData = (elements) => {
-    elements.name.value = formData.name;
     elements.text.value = formData.text;
 }; 

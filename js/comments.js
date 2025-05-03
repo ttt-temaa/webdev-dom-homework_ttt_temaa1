@@ -1,5 +1,5 @@
-import { escapeHTML, formatDate } from './utils.js';
-import { handleLikeClick } from './likes.js';
+import {escapeHTML, formatDate} from './utils.js';
+import {handleLikeClick} from './likes.js';
 
 export let comments = [];
 

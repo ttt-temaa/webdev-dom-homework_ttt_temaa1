@@ -1,4 +1,4 @@
-import { delay } from './utils.js';
+import {delay} from './utils.js';
 
 export const handleLikeClick = (e, btn, comments, renderComments, elements) => {
     e.stopPropagation();
