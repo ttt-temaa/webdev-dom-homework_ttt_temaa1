@@ -1,32 +1,13 @@
 <!DOCTYPE html>
+<html lang="ru">
 <head>
-    <title>Проект "Комменты"</title>
-    <meta charset="utf-8"/>
-    <link rel="stylesheet" href="styles.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Комментарии</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
-<div class="container">
-    <div class="auth-controls">
-        <button class="logout-button" style="display: none;">Выйти</button>
-    </div>
-    <div class="comments-loading" style="display: block;">Загрузка комментариев...</div>
-    <ul class="comments" style="display: none;"></ul>
-    <div class="add-form" style="display: none;">
-        <label>
-            <input type="text" class="add-form-name" placeholder="Введите ваше имя" readonly/>
-        </label>
-        <textarea class="add-form-text" placeholder="Введите ваш комментарий" rows="4"></textarea>
-        <div class="add-form-row">
-            <button class="add-form-button">Написать</button>
-        </div>
-    </div>
-    <div class="auth-link" style="display: none;">
-        <p>Чтобы добавить комментарий, <a href="login.html">авторизуйтесь</a></p>
-    </div>
-    <div class="comment-loading" style="display: none;">Комментарий добавляется...</div>
-</div>
-
-<script type="module" src="js/main.js"></script>
+    <div id="app"></div>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

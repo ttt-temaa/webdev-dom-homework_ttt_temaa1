@@ -1,7 +1,8 @@
-import { getComments } from './api.js';
-import { initializeComments, renderComments } from './comments.js';
-import { initializeForm, restoreFormData } from './form.js';
-import { isAuthorized, restoreUser, logout } from './auth.js';
+import {getComments} from './api.js';
+import {initializeComments, renderComments} from './comments.js';
+import {initializeForm, restoreFormData} from './form.js';
+import {isAuthorized, restoreUser, logout} from './auth.js';
+import {renderLoginPage, renderCommentsPage} from './pages.js';
 
 const elements = {
     list: document.querySelector(".comments"),
@@ -18,38 +19,17 @@ const elements = {
 const initialize = () => {
     const user = restoreUser();
 
-    // Check authentication state
     if (!isAuthorized()) {
-        if (elements.addForm) elements.addForm.style.display = "none";
-        if (elements.authLink) elements.authLink.style.display = "block";
-        if (elements.logoutButton) elements.logoutButton.style.display = "none";
-        if (elements.authLink) {
-            elements.authLink.addEventListener("click", () => {
-                window.location.href = "login.html";
-            });
-        }
+        renderLoginPage();
     } else {
-        if (elements.addForm) elements.addForm.style.display = "block";
-        if (elements.authLink) elements.authLink.style.display = "none";
-        if (elements.logoutButton) elements.logoutButton.style.display = "block";
-        if (elements.name) {
-            elements.name.value = user.name;
-            elements.name.readOnly = true;
-        }
-
-        // Add logout button handler
-        if (elements.logoutButton) {
-            elements.logoutButton.addEventListener("click", () => {
-                logout();
-            });
-        }
+        renderCommentsPage();
     }
 
     if (elements.commentsLoading) elements.commentsLoading.style.display = "block";
     if (elements.list) elements.list.style.display = "none";
 
     getComments()
-        .then(({ comments }) => {
+        .then(({comments}) => {
             if (elements.list) {
                 initializeComments(comments);
                 renderComments(elements);

@@ -1,45 +1,48 @@
-import {getAuthHeader} from './auth.js';
+import {getToken} from './auth.js';
 
-const API_URL = "https://wedev-api.sky.pro/api/v2/ttttemaa/comments";
+const API_URL = "https://wedev-api.sky.pro/api/v2/artem-korotkov/comments";
 
-export const getComments = () => {
-    return fetch(API_URL)
-        .then((response) => {
-            if (!response.ok) {
-                if (response.status >= 500 && response.status < 600) {
-                    throw new Error("Сервер сломался, попробуй позже");
-                }
-                throw new Error(`HTTP ${response.status}`);
+export const getComments = async () => {
+    try {
+        const response = await fetch(API_URL, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${getToken()}`
             }
-            return response.json();
         });
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch comments");
+        }
+
+        const data = await response.json();
+        return data.comments;
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        throw error;
+    }
 };
 
-export const addComment = (text) => {
-    return fetch(API_URL, {
-        method: "POST",
-        headers: {
-            ...getAuthHeader(),
-        },
-        body: JSON.stringify({
-            text: text,
-        }),
-    })
-        .then((response) => {
-            if (!response.ok) {
-                return response.json().then((errorData) => {
-                    if (response.status === 400) {
-                        throw new Error(errorData.error || "Комментарий должен быть не короче 3 символов");
-                    }
-                    if (response.status === 401) {
-                        throw new Error("Для добавления комментария необходимо авторизоваться");
-                    }
-                    if (response.status >= 500 && response.status < 600) {
-                        throw new Error("Сервер сломался, попробуй позже");
-                    }
-                    throw new Error(errorData.error || `HTTP ${response.status}`);
-                });
-            }
-            return response.json();
+export const addComment = async (text) => {
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${getToken()}`
+            },
+            body: JSON.stringify({
+                text: text
+            })
         });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to add comment");
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error adding comment:", error);
+        throw error;
+    }
 }; 
