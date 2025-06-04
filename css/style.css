@@ -5,21 +5,31 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
     line-height: 1.6;
-    background-color: #f5f5f5;
-    color: #333;
+    background: #202020;
+    color: #ffffff;
+    min-height: 100vh;
 }
 
 .container {
     max-width: 800px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 80px 20px 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Comments styles */
 .comments {
-    margin-bottom: 20px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 596px;
 }
 
 .comments-loading {
@@ -28,31 +38,35 @@ body {
     color: #666;
 }
 
-.comments-list {
-    list-style: none;
-}
-
 .comment {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: radial-gradient(
+        75.42% 75.42% at 50% 42.37%,
+        rgba(53, 53, 53, 0) 22.92%,
+        #7334ea 100%
+    );
+    filter: drop-shadow(0px 20px 67px rgba(0, 0, 0, 0.08));
+    border-radius: 20px;
+    padding: 48px;
+    margin-bottom: 20px;
+    width: 596px;
+    box-sizing: border-box;
 }
 
 .comment-header {
+    font-size: 16px;
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
     color: #666;
-    font-size: 0.9em;
 }
 
 .comment-body {
-    margin-bottom: 10px;
+    margin-top: 32px;
+    margin-bottom: 32px;
 }
 
 .comment-text {
+    font-size: 32px;
     white-space: pre-wrap;
     word-break: break-word;
 }
@@ -69,12 +83,13 @@ body {
 }
 
 .likes-counter {
+    font-size: 26px;
+    margin-right: 8px;
     color: #666;
 }
 
 .like-button {
-    background: none;
-    border: none;
+    all: unset;
     cursor: pointer;
     width: 20px;
     height: 20px;
@@ -101,21 +116,40 @@ body {
 
 /* Add comment form styles */
 .add-form {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
+    background: radial-gradient(
+        75.42% 75.42% at 50% 42.37%,
+        rgba(53, 53, 53, 0) 22.92%,
+        #7334ea 100%
+    );
+    filter: drop-shadow(0px 20px 67px rgba(0, 0, 0, 0.08));
+    border-radius: 20px;
+    padding: 48px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 596px;
+    box-sizing: border-box;
     display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
-.add-form-text {
-    flex: 1;
+.add-form-name {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.add-form-text {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    resize: vertical;
+    min-height: 100px;
 }
 
 .add-form-button {
@@ -126,6 +160,7 @@ body {
     border-radius: 4px;
     cursor: pointer;
     transition: background 0.3s;
+    align-self: flex-end;
 }
 
 .add-form-button:hover {
@@ -143,21 +178,18 @@ body {
     color: #666;
 }
 
-.auth-message {
+.auth-link {
     text-align: center;
     padding: 20px;
-    background: white;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #666;
 }
 
-.auth-message a {
+.auth-link a {
     color: #007bff;
     text-decoration: none;
 }
 
-.auth-message a:hover {
+.auth-link a:hover {
     text-decoration: underline;
 }
 
@@ -172,14 +204,17 @@ body {
 
 .login-form,
 .register-form {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: radial-gradient(
+        75.42% 75.42% at 50% 42.37%,
+        rgba(53, 53, 53, 0) 22.92%,
+        #7334ea 100%
+    );
+    filter: drop-shadow(0px 20px 67px rgba(0, 0, 0, 0.08));
+    border-radius: 20px;
+    padding: 48px;
     width: 500px;
     display: flex;
     flex-direction: column;
-    flex-wrap: nowrap;
     align-items: center;
     position: absolute;
     top: 50%;
@@ -191,6 +226,7 @@ body {
 .register-form h2 {
     margin-bottom: 20px;
     text-align: center;
+    color: #fff;
 }
 
 .login-form form,
@@ -198,6 +234,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 100%;
 }
 
 .login-form input,
@@ -206,6 +243,8 @@ body {
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 .login-form button,

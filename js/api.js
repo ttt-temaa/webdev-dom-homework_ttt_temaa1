@@ -4,11 +4,15 @@ const API_URL = "https://wedev-api.sky.pro/api/v2/artem-korotkov/comments";
 
 export const getComments = async () => {
     try {
+        const headers = {};
+        const token = getToken();
+        if (token) {
+            headers.Authorization = `Bearer ${token}`;
+        }
+
         const response = await fetch(API_URL, {
             method: "GET",
-            headers: {
-                Authorization: `Bearer ${getToken()}`
-            }
+            headers
         });
 
         if (!response.ok) {
