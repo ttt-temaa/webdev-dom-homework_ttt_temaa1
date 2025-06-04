@@ -35,7 +35,7 @@ body {
 .comments-loading {
     text-align: center;
     padding: 20px;
-    color: #666;
+    color: #fff;
 }
 
 .comment {
@@ -57,7 +57,7 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
-    color: #666;
+    color: #fff;
 }
 
 .comment-body {
@@ -85,7 +85,7 @@ body {
 .likes-counter {
     font-size: 26px;
     margin-right: 8px;
-    color: #666;
+    color: #fff;
 }
 
 .like-button {
