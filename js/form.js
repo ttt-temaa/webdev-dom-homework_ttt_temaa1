@@ -25,7 +25,7 @@ export const handleFormSubmit = (elements) => {
 
     const handleSuccess = () => {
         return getComments()
-            .then(({comments}) => {
+            .then((comments) => {
                 initializeComments(comments);
                 renderComments(elements);
                 elements.text.value = "";
@@ -43,7 +43,7 @@ export const handleFormSubmit = (elements) => {
     };
 
     return addComment(text)
-        .then(handleSuccess)
+        .then(() => handleSuccess())
         .catch(handleError)
         .finally(() => {
             elements.addForm.style.display = "block";

@@ -1,7 +1,14 @@
 import {delay} from './utils.js';
+import {isAuthorized} from './auth.js';
 
 export const handleLikeClick = (e, btn, comments, renderComments, elements) => {
     e.stopPropagation();
+    
+    if (!isAuthorized()) {
+        alert("Для того чтобы поставить лайк, необходимо авторизоваться");
+        return;
+    }
+    
     const i = btn.dataset.index;
     if (comments[i].isLikeLoading) return;
 
